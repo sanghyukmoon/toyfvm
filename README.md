@@ -1,6 +1,7 @@
 # toyfvm
 Minimal 1-D FVM code for learning...
-currently, solve a very simple advection equation $$q_t + u q_x = 0$$
+currently, solve a very simple advection equatio
+\[ q_t + u q_x = 0 ]\
 
 # compile & run
 g++ -std=c++11 main.cpp
