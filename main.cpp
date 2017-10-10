@@ -68,7 +68,8 @@ void Mesh::Initialize()
 double Mesh::Flux(double ql, double qr)
 {
   // SMOON : which numerical flux function to use
-  return 0.5 * lambda_max * (ql + qr);
+  return lambda_max * ql;
+  //return 0.5 * lambda_max * (ql + qr);
 }
 
 void Mesh::OneStep()
