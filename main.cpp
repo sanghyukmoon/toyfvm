@@ -16,6 +16,7 @@ public:
   int step, out_step;
   double start_time, final_time, cfl_number, lambda_max, time, dt;
   double out_time, out_dt;
+  int flux_id;
 
   // function
   void Initialize();
@@ -25,7 +26,8 @@ public:
 
 Mesh::Mesh()
 {
-  // TODO SMOON : I'm not familiar with string parser. Need improvement
+  // Default constructor for class ::Mesh::
+  // Read parameters from input file
   std::ifstream inputFile("inputs.txt");
   std::string line;
   if (inputFile.is_open())
@@ -46,6 +48,8 @@ Mesh::Mesh()
     cfl_number = std::stod(line);
     std::getline(inputFile, line);
     lambda_max = std::stod(line);
+    std::getline(inputFile, line);
+    flux_id = std::stoi(line);
   }
   else std::cout << "Unable to open 'inputs.txt'\n";
 
@@ -61,7 +65,7 @@ Mesh::Mesh()
 
 void Mesh::Initialize()
 {
-  // SMOON : initial condition is set here. Better to take parameters from input file
+  // Set initial condition
   q = new double[nx1 + 2*NGHOST];
   f = new double[nx1 + 2*NGHOST + 1];
   for (int i=is; i<=ie; ++i) {
@@ -73,9 +77,16 @@ void Mesh::Initialize()
 
 double Mesh::Flux(double ql, double qr)
 {
-  // SMOON : which numerical flux function to use
-  //return lambda_max * ql;
-  return 0.5 * lambda_max * (ql + qr);
+  // Choose which numerical flux function to use
+  if (flux_id == 0) {
+    return lambda_max * ql;
+  }
+  else if (flux_id == 1) {
+    return 0.5 * lambda_max * (ql + qr) - 0.5 * dx1/dt * (qr - ql);
+  }
+  else if (flux_id == 2) {
+    return 0.5 * lambda_max * (ql + qr);
+  }
 }
 
 void Mesh::OneStep()
@@ -89,7 +100,7 @@ void Mesh::OneStep()
     f[i] = Flux(q[i-1], q[i]);
   }
   for (int i=is; i<=ie; ++i) {
-    double dq = -1.0 * (cfl_number / lambda_max) * (f[i+1] - f[i]);
+    double dq = -1.0 * (dt / dx1) * (f[i+1] - f[i]);
     q[i] += dq;
   }
   time += dt;

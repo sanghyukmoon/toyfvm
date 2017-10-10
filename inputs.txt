@@ -4,5 +4,6 @@
 0.0         \\ start_time
 5.0         \\ final_time
 0.01        \\ output timestep
-1.0         \\ cfl_number
+0.5         \\ cfl_number
 1.0         \\ maximum eigenvalue
+1           \\ numerical flux function. 0 (upwind), 1 (Lax-Friedrich), 2 (centered)
