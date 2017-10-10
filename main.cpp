@@ -96,9 +96,11 @@ void Mesh::OneStep()
     q[i] = q[nx1 + i];
     q[nx1 + 2*NGHOST - 1 - i] = q[2*NGHOST - 1 - i];
   }
+  // compute flux
   for (int i=is; i<=ie+1; ++i) {
     f[i] = Flux(q[i-1], q[i]);
   }
+  // evolve
   for (int i=is; i<=ie; ++i) {
     double dq = -1.0 * (dt / dx1) * (f[i+1] - f[i]);
     q[i] += dq;
