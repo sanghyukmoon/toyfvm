@@ -12,7 +12,7 @@ public:
   // data
   int is,ie,nx1;
   double x1min, x1max, dx1;
-  double *q;
+  double *q, *f;
   int step, out_step;
   double start_time, final_time, cfl_number, lambda_max, time, dt;
   double out_time, out_dt;
@@ -63,6 +63,7 @@ void Mesh::Initialize()
 {
   // SMOON : initial condition is set here. Better to take parameters from input file
   q = new double[nx1 + 2*NGHOST];
+  f = new double[nx1 + 2*NGHOST + 1];
   for (int i=is; i<=ie; ++i) {
     double x1 = x1min + (i-is) * dx1;
     if ((x1 >= 0.2)&&(x1 <= 0.4)) q[i] = 1;
@@ -73,8 +74,8 @@ void Mesh::Initialize()
 double Mesh::Flux(double ql, double qr)
 {
   // SMOON : which numerical flux function to use
-  return lambda_max * ql;
-  //return 0.5 * lambda_max * (ql + qr);
+  //return lambda_max * ql;
+  return 0.5 * lambda_max * (ql + qr);
 }
 
 void Mesh::OneStep()
@@ -84,10 +85,11 @@ void Mesh::OneStep()
     q[i] = q[nx1 + i];
     q[nx1 + 2*NGHOST - 1 - i] = q[2*NGHOST - 1 - i];
   }
+  for (int i=is; i<=ie+1; ++i) {
+    f[i] = Flux(q[i-1], q[i]);
+  }
   for (int i=is; i<=ie; ++i) {
-    double fr = Flux(q[i], q[i+1]);
-    double fl = Flux(q[i-1], q[i]);
-    double dq = -1.0 * (cfl_number / lambda_max) * (fr - fl);
+    double dq = -1.0 * (cfl_number / lambda_max) * (f[i+1] - f[i]);
     q[i] += dq;
   }
   time += dt;
