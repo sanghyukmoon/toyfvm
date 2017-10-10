@@ -13,8 +13,9 @@ public:
   int is,ie,nx1;
   double x1min, x1max, dx1;
   double *q;
-  int step;
+  int step, out_step;
   double start_time, final_time, cfl_number, lambda_max, time, dt;
+  double out_time, out_dt;
 
   // function
   void Initialize();
@@ -40,6 +41,8 @@ Mesh::Mesh()
     std::getline(inputFile, line);
     final_time = std::stod(line);
     std::getline(inputFile, line);
+    out_dt = std::stod(line);
+    std::getline(inputFile, line);
     cfl_number = std::stod(line);
     std::getline(inputFile, line);
     lambda_max = std::stod(line);
@@ -51,7 +54,9 @@ Mesh::Mesh()
   dx1 = (x1max - x1min) / (double)nx1;
   dt = dx1 * cfl_number / lambda_max;
   step = 0;
+  out_step = 0;
   time = 0;
+  out_time = 0;
 }
 
 void Mesh::Initialize()
@@ -93,13 +98,15 @@ void output(Mesh *pm)
 {
   std::ofstream file;
   char filename[sizeof "out000.dat"];
-  sprintf(filename, "out%03d.dat", pm->step);
+  sprintf(filename, "out%03d.dat", pm->out_step);
   file.open(filename);
   for (int i=pm->is; i<=pm->ie; ++i) {
     double x1 = pm->x1min + (i-pm->is)*pm->dx1;
     file << x1 << " " << pm->q[i] << "\n";
   }
   file.close();
+  pm->out_time += pm->out_dt;
+  pm->out_step++;
 }
   
 int main()
@@ -108,7 +115,7 @@ int main()
   pm = new Mesh;
   pm->Initialize();
   while (pm->time < pm->final_time) {
-    output(pm);
+    if (pm->time >= pm->out_time) output(pm);
     pm->OneStep();
   }
   return 0;
